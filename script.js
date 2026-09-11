@@ -26,7 +26,7 @@ async function summarizePDF() {
 
     const response =
     await fetch(
-        "https://YOUR-RENDER-URL.onrender.com/summarize",
+        "https://pdf-summarizer-2ltg.onrender.com/summarize",
         {
             method:"POST",
             body:formData
