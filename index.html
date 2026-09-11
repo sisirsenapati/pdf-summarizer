@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PDF Summarizer</title>
+
+<style>
+body{
+font-family:Arial;
+max-width:600px;
+margin:auto;
+padding:30px;
+}
+
+button{
+padding:10px 20px;
+cursor:pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>PDF Summarizer</h2>
+
+<input
+type="file"
+id="pdfFile"
+accept=".pdf">
+
+<br><br>
+
+<button onclick="summarizePDF()">
+Generate Summary
+</button>
+
+<p id="status"></p>
+
+<script src="script.js"></script>
+
+</body>
+</html>
