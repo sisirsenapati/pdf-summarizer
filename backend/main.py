@@ -2,27 +2,20 @@ from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
-import fitz
+import pymupdf  # PyMuPDF
 import tempfile
-import os
-import nltk
-
-nltk.download('punkt')
-nltk.download('punkt_tab')
-from sumy.parsers.plaintext import PlaintextParser
-from sumy.nlp.tokenizers import Tokenizer
-from sumy.summarizers.text_rank import TextRankSummarizer
+import re
 
 from reportlab.platypus import (
     SimpleDocTemplate,
     Paragraph,
     Spacer
 )
-
 from reportlab.lib.styles import getSampleStyleSheet
 
 app = FastAPI()
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -35,40 +28,52 @@ app.add_middleware(
 def home():
     return {"status": "running"}
 
+
 @app.post("/summarize")
 async def summarize_pdf(file: UploadFile = File(...)):
 
+    # Save uploaded PDF temporarily
     temp_pdf = tempfile.mktemp(".pdf")
 
     with open(temp_pdf, "wb") as f:
         f.write(await file.read())
 
+    # Extract text from PDF
     text = ""
 
-    pdf = fitz.open(temp_pdf)
+    pdf = pymupdf.open(temp_pdf)
 
     for page in pdf:
         text += page.get_text()
 
     pdf.close()
 
-    parser = PlaintextParser.from_string(
-        text,
-        Tokenizer("english")
-    )
+    # Clean text
+    text = text.replace("\n", " ")
+    text = re.sub(r"\s+", " ", text)
 
-    summarizer = TextRankSummarizer()
+    # Split into sentences
+    sentences = re.split(r'(?<=[.!?])\s+', text)
 
-    summary_sentences = summarizer(
-        parser.document,
-        15
-    )
+    # Take first 15 meaningful sentences
+    summary_sentences = []
 
+    for sentence in sentences:
+        sentence = sentence.strip()
+
+        if len(sentence) > 30:
+            summary_sentences.append(sentence)
+
+        if len(summary_sentences) >= 15:
+            break
+
+    # Build bullet summary
     summary_text = ""
 
     for sentence in summary_sentences:
-        summary_text += "• " + str(sentence) + "\n\n"
+        summary_text += f"• {sentence}\n\n"
 
+    # Generate summary PDF
     output_pdf = tempfile.mktemp(".pdf")
 
     doc = SimpleDocTemplate(output_pdf)
