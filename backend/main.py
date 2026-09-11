@@ -5,7 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import fitz
 import tempfile
 import os
+import nltk
 
+nltk.download('punkt')
+nltk.download('punkt_tab')
 from sumy.parsers.plaintext import PlaintextParser
 from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.text_rank import TextRankSummarizer
